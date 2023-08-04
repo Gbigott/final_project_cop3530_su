@@ -8,6 +8,7 @@
 
 using namespace std;
 
+// structure that contains all the information that we filter from the csv file
 struct RecordsOfHomes
 {
     RecordsOfHomes ( double ids,int rooms_beds,int prices,string city)
@@ -27,26 +28,27 @@ struct RecordsOfHomes
 
   
 };
+// this is a helper operator that i use for the make_heap function from algorimth library (not necesary, will be erase later)
+// bool operator <(const RecordsOfHomes& i, const RecordsOfHomes& j)
+// {
+//     return i.IDS < j.IDS;
+// }
 
-bool operator <(const RecordsOfHomes& i, const RecordsOfHomes& j)
-{
-    return i.IDS < j.IDS;
-}
-
+//helper function for printing the heapmax vector.
 void printVec(vector<RecordsOfHomes> row) {
     
     for (int i = 0; i < 10; i++) {
+        cout.precision(17);
         cout << row[i].IDS <<" "<<row[i].City<<" "<<row[i].Prices<<" "<<row[i].Room<<endl;
     }
 }
-vector<RecordsOfHomes> insert_on_heap(vector<RecordsOfHomes>& info)
-{
-  vector<RecordsOfHomes> temp = info;
- make_heap (info.begin(),info.end());
 
- return temp;
+// void printVec(vector<int> row) {
 
-}
+//     for (int i = 0; i < row.size(); i++) {
+//         cout << row[i] <<"  ";
+//     }
+// }
 
 vector<RecordsOfHomes> Read_file(string in_file)
 {
@@ -134,11 +136,55 @@ vector<RecordsOfHomes> Read_file(string in_file)
     return saved_info;
 
 }
+
+// helper function for the creation of max heap
+ void heapify_down(vector<RecordsOfHomes>& info,double n,double i)
+ {
+    double smallest = i; 
+    
+    double l = 2 * i + 1; 
+    double r = 2 * i + 2; 
+
+    if (l < n && info[l].IDS > info[smallest].IDS)
+    smallest = l;
+
+    if (r < n && info[r].IDS > info[smallest].IDS)
+    smallest = r;
+
+    if (smallest != i) {
+    RecordsOfHomes temp = info[i];
+    info[i] = info[smallest];
+    info[smallest] = temp;
+
+    heapify_down(info, n, smallest);
+
+        
+
+    }
+ }
+
+// function creates the heap
+ vector<RecordsOfHomes> insert_on_heap(vector<RecordsOfHomes>& info)
+{
+    vector<RecordsOfHomes> temp = info;
+
+    double starting_point = ((temp.size())/2)-1;
+
+    for(double i = starting_point ;i>=0; i--)
+    {
+    heapify_down(temp,temp.size(),i);
+    }
+
+
+ return temp;
+
+}
+   
 int main()
 {
     
     vector<RecordsOfHomes> info;
-    string file = "housing.csv";
+    //string file = "housing.csv";
     info = Read_file("housing.csv");
     
     
@@ -149,6 +195,7 @@ int main()
     int selectOption;
     cin>>selectOption;
 
+    //for search by count of beds.
     if(selectOption == 1)
     {
         int selection_op;
@@ -159,23 +206,28 @@ int main()
         if(selection_op == 1)
         {
             //insert your map function here.
-            cout<<"please select the minimum number of rooms to search for:"<<endl;
+            cout<<"please select the minimum number of beds to search for:"<<endl;
+            // in this case you can add an if statement that compares the input number of beds you are looking for. if it appears.
+            // it will return every aparment in that city from the map
+            // if not it just return a message of not found
         }
         else if(selection_op == 2)
         {
-            vector<RecordsOfHomes> insertheap = insert_on_heap(info);
+           vector<RecordsOfHomes> insertheap = insert_on_heap(info);
+           // vector<int> insertheap = insert_on_heap(info);
+           // printVec(insertheap);
 
-            printVec(insertheap);
+            // in this case you can add an if statement that compares the input with the number of beds you are looking for. if it appears.
+            // it will return every aparment in that city from the maxheap.
+            // if not it just return a message of not found.
 
 
-            cout<<"please select the minimum number of rooms to search for:"<<endl;
+            cout<<"please select the minimum number of beds to search for:"<<endl;
 
         }
         
-
-       
-
     }
+    //for searching by  area.
     else if(selectOption == 2)
     {
         int selection_op;
@@ -190,10 +242,16 @@ int main()
             string city_name;
             cin >> city_name;
 
+            // in this case you can add an if statement that compares the input with the name of the city. if it appears.
+            // it will return every aparment in that city from the map
+            // if not it just return a message of not found
         }
         else if(selection_op == 2)
         {
-            cout<<"please select the minimum number of rooms to search for:"<<endl;
+            // in this case you can add an if statement that compares the input with the name of the city. if it appears.
+            // it will return every aparment in that city from the heap.
+            // if not it just return a message of not found.
+            cout<<"please enter the name of the city you looking for:"<<endl;
              string city_name;
              cin >> city_name;
         }
