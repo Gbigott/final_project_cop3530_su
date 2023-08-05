@@ -155,16 +155,40 @@ vector<RecordsOfHomes> Read_file(string in_file, OrderedMap &map)
 }
 
 // Helper function that searches for properties with the specified cityName with at least numRooms
-vector<RecordsOfHomes> search_cities_rooms(vector<RecordsOfHomes>& info, string cityName, double numRooms)
+vector<RecordsOfHomes> search_cities_rooms(vector<RecordsOfHomes> info, string cityName, double numRooms)
 {  
     vector<RecordsOfHomes> resultingHeap;
-
-    
-    for(int i = 0; i < info.size(); i++)
+    int n = info.size()-1;
+    for(int i = 0; i < n; i++)
     {
-        if((info[i].City == cityName or cityName == "") and info[i].Room >= numRooms)
+    	// Heapify Up
+    	RecordsOfHomes temp = info[0];
+    	info[0] = info[n];
+    	bool cl = true;
+    	int smallest = 0;
+    	int z = 0;
+    	while(z < n-1) {
+    	    smallest = z;
+    	    int l = 2 * z + 1; 
+            int r = 2 * z + 2; 
+    	    if (l < n-1 && info[l].Prices < info[smallest].Prices)
+                smallest = l;
+            if (r < n-1 && info[r].Prices < info[smallest].Prices)
+                smallest = r;
+            if(smallest != z) {
+                RecordsOfHomes temp = info[z];
+                info[z] = info[smallest];
+                info[smallest] = temp;
+                z = smallest;
+            }
+            else {
+                break;
+            }
+        }
+        n = n - 1;
+        if((temp.City == cityName or cityName == "") and temp.Room >= numRooms)
         {
-            resultingHeap.push_back(info[i]);
+            resultingHeap.push_back(temp);
             if(resultingHeap.size() >= 10)
                 break; // Limit results to 10
         }
