@@ -11,25 +11,7 @@
 using namespace std;
 
 
-// structure that contains all the information that we filter from the csv file
-struct RecordsOfHomes
-{
-    RecordsOfHomes (double ids,int rooms_beds,int prices,string city)
-    {
-        IDS = ids;
-        Room = rooms_beds;
-        Prices = prices;
-        City = city;
-    }
-
-    int Room;
-    int Prices;
-    double IDS;
-    string City;
-
-};
-
-//helper function for printing the heapmax vector.
+//helper function for printing the heapmin vector.
 void printVec(vector<RecordsOfHomes> row) {
 
     for (int i = 0; i < 10; i++) {
@@ -109,7 +91,7 @@ vector<RecordsOfHomes> Read_file(string in_file, OrderedMap &map)
             getline(inputString,long_s,',');
             getline(inputString,state,',');
 
-            RecordsOfHomes records(ids,beds, price, region);
+            RecordsOfHomes records(ids,beds, price, region, 0);
 
             saved_info.push_back(records);
             map.AddHead(ids, beds, price, region, sq_feet);    
@@ -119,7 +101,7 @@ vector<RecordsOfHomes> Read_file(string in_file, OrderedMap &map)
     return saved_info;
 }
 
-// helper function for the creation of max heap
+// helper function for the creation of min heap
  void heapify_down(vector<RecordsOfHomes>& info,double n,double i)
  {
     double smallest = i; 
@@ -161,17 +143,17 @@ vector<RecordsOfHomes> search_cities_rooms(vector<RecordsOfHomes> info, string c
     int n = info.size()-1;
     for(int i = 0; i < n; i++)
     {
-    	// Heapify Up
-    	RecordsOfHomes temp = info[0];
-    	info[0] = info[n];
-    	bool cl = true;
-    	int smallest = 0;
-    	int z = 0;
-    	while(z < n-1) {
-    	    smallest = z;
-    	    int l = 2 * z + 1; 
+        // Heapify Up
+        RecordsOfHomes temp = info[0];
+        info[0] = info[n];
+        bool cl = true;
+        int smallest = 0;
+        int z = 0;
+        while(z < n-1) {
+            smallest = z;
+            int l = 2 * z + 1; 
             int r = 2 * z + 2; 
-    	    if (l < n-1 && info[l].Prices < info[smallest].Prices)
+            if (l < n-1 && info[l].Prices < info[smallest].Prices)
                 smallest = l;
             if (r < n-1 && info[r].Prices < info[smallest].Prices)
                 smallest = r;
@@ -224,7 +206,7 @@ int main()
         {
         int selection_op;
         cout<<"1. Use maps"<<endl;
-        cout<<"2. Use maxheap"<<endl;
+        cout<<"2. Use minheap"<<endl;
         cin>>selection_op;
 
         if(selection_op == 1)
@@ -236,7 +218,7 @@ int main()
             string city_name;
             cin.ignore();
             getline(cin, city_name);
-            vector<Node> result = map.InOrder(0, city_name, minbeds);
+            vector<RecordsOfHomes> result = map.InOrder(0, city_name, minbeds);
             if(result.size() == 0) {
                 cout << "No matching houses found" << endl;
             } else {
@@ -253,11 +235,11 @@ int main()
         }
         else if(selection_op == 2)
         {
-            cout<<"please select the minimum number of beds to search for:"<<endl;
-            double numBeds;
+            cout<<"Please select the minimum number of beds to search for:"<<endl;
+            int numBeds;
             cin>>numBeds;
             
-            cout<<"please enter the name of the city you looking for:"<<endl;
+            cout<<"Please enter the name of the city you looking for:"<<endl;
             string city_name;
             cin.ignore();
             getline(cin, city_name);
@@ -284,7 +266,7 @@ int main()
     {
         int selection_op;
         cout<<"1. Use maps"<<endl;
-        cout<<"2. Use maxheap"<<endl;
+        cout<<"2. Use minheap"<<endl;
         cin>>selection_op;
 
         if(selection_op == 1)
@@ -293,7 +275,7 @@ int main()
             string city_name;
             cin.ignore();
             getline(cin, city_name);
-            vector<Node> result = map.InOrder(0, city_name, 0);
+            vector<RecordsOfHomes> result = map.InOrder(0, city_name, 0);
             if(result.size() == 0) {
                 cout << "Not found" << endl;
             } else {
