@@ -6,9 +6,10 @@
 #include <algorithm>  
 #include <map>
 #include "ordered_map.h"
+#include "ordered_map.cpp"
 #include <iomanip>
-
 using namespace std;
+
 
 // structure that contains all the information that we filter from the csv file
 struct RecordsOfHomes
@@ -19,8 +20,6 @@ struct RecordsOfHomes
         Room = rooms_beds;
         Prices = prices;
         City = city;
-
-
     }
 
     int Room;
@@ -28,29 +27,16 @@ struct RecordsOfHomes
     double IDS;
     string City;
 
-  
 };
-// this is a helper operator that i use for the make_heap function from algorimth library (not necesary, will be erase later)
-// bool operator <(const RecordsOfHomes& i, const RecordsOfHomes& j)
-// {
-//     return i.IDS < j.IDS;
-// }
 
 //helper function for printing the heapmax vector.
 void printVec(vector<RecordsOfHomes> row) {
-    
+
     for (int i = 0; i < 10; i++) {
         cout.precision(17);
         cout << row[i].IDS <<" "<<row[i].City<<" "<<row[i].Prices<<" "<<row[i].Room<<endl;
     }
 }
-
-// void printVec(vector<int> row) {
-
-//     for (int i = 0; i < row.size(); i++) {
-//         cout << row[i] <<"  ";
-//     }
-// }
 
 vector<RecordsOfHomes> Read_file(string in_file, OrderedMap &map)
 {
@@ -65,7 +51,7 @@ vector<RecordsOfHomes> Read_file(string in_file, OrderedMap &map)
     else
     {
         string s;
-        
+    
         cout << "Processing info..." << endl;
         getline(infile, s);
 
@@ -126,43 +112,30 @@ vector<RecordsOfHomes> Read_file(string in_file, OrderedMap &map)
             RecordsOfHomes records(ids,beds, price, region);
 
             saved_info.push_back(records);
-            map.AddHead(ids, beds, price, region, sq_feet);
-             
-             
+            map.AddHead(ids, beds, price, region, sq_feet);    
         }
         infile.close();
-
-
-
-        
     }
-
     return saved_info;
-
 }
 
 // helper function for the creation of max heap
  void heapify_down(vector<RecordsOfHomes>& info,double n,double i)
  {
     double smallest = i; 
-    
     double l = 2 * i + 1; 
     double r = 2 * i + 2; 
 
-    if (l < n && info[l].IDS > info[smallest].IDS)
-    smallest = l;
-
-    if (r < n && info[r].IDS > info[smallest].IDS)
-    smallest = r;
-
+    if (l < n && info[l].Prices < info[smallest].Prices)
+        smallest = l;
+    if (r < n && info[r].Prices < info[smallest].Prices)
+        smallest = r;
     if (smallest != i) {
-    RecordsOfHomes temp = info[i];
-    info[i] = info[smallest];
-    info[smallest] = temp;
 
-    heapify_down(info, n, smallest);
-
-        
+        RecordsOfHomes temp = info[i];
+        info[i] = info[smallest];
+        info[smallest] = temp;
+        heapify_down(info, n, smallest);
 
     }
  }
@@ -171,7 +144,6 @@ vector<RecordsOfHomes> Read_file(string in_file, OrderedMap &map)
  vector<RecordsOfHomes> insert_on_heap(vector<RecordsOfHomes>& info)
 {
     vector<RecordsOfHomes> temp = info;
-
     double starting_point = ((temp.size())/2)-1;
 
     for(double i = starting_point ;i>=0; i--)
@@ -179,11 +151,51 @@ vector<RecordsOfHomes> Read_file(string in_file, OrderedMap &map)
         heapify_down(temp,temp.size(),i);
     }
 
-
  return temp;
-
 }
-   
+
+// Helper function that searches for properties with the specified cityName with at least numRooms
+vector<RecordsOfHomes> search_cities_rooms(vector<RecordsOfHomes> info, string cityName, double numRooms)
+{  
+    vector<RecordsOfHomes> resultingHeap;
+    int n = info.size()-1;
+    for(int i = 0; i < n; i++)
+    {
+    	// Heapify Up
+    	RecordsOfHomes temp = info[0];
+    	info[0] = info[n];
+    	bool cl = true;
+    	int smallest = 0;
+    	int z = 0;
+    	while(z < n-1) {
+    	    smallest = z;
+    	    int l = 2 * z + 1; 
+            int r = 2 * z + 2; 
+    	    if (l < n-1 && info[l].Prices < info[smallest].Prices)
+                smallest = l;
+            if (r < n-1 && info[r].Prices < info[smallest].Prices)
+                smallest = r;
+            if(smallest != z) {
+                RecordsOfHomes temp = info[z];
+                info[z] = info[smallest];
+                info[smallest] = temp;
+                z = smallest;
+            }
+            else {
+                break;
+            }
+        }
+        n = n - 1;
+        if((temp.City == cityName or cityName == "") and temp.Room >= numRooms)
+        {
+            resultingHeap.push_back(temp);
+            if(resultingHeap.size() >= 10)
+                break; // Limit results to 10
+        }
+    }
+    return resultingHeap;
+}
+
 int main()
 {
     
@@ -192,17 +204,24 @@ int main()
     OrderedMap map;
     info = Read_file("housing.csv", map);
     
+    bool cvar = true;
+    cout<<"Welcome to our housing search app!" << endl;
+    while(cvar) {
+        cout<<endl<<"Please choose your search method:"<<endl;
+        cout<<"1. Search by room count"<<endl;
+        cout<<"2. Search by area"<<endl;
+        cout<<"3. Quit"<<endl;
     
-    cout<<"Welcome to our housing search app! please choose your search method:"<<endl;
-    cout<<"1.search by room count"<<endl;
-    cout<<"2.search by area"<<endl;
-    
-    int selectOption;
-    cin>>selectOption;
 
-    //for search by count of beds.
-    if(selectOption == 1)
-    {
+        vector<RecordsOfHomes> insertheap = insert_on_heap(info);
+
+        int selectOption;
+        cin>>selectOption;
+
+    
+        //for search by count of beds.
+        if(selectOption == 1)
+        {
         int selection_op;
         cout<<"1. Use maps"<<endl;
         cout<<"2. Use maxheap"<<endl;
@@ -215,58 +234,74 @@ int main()
             cin >> minbeds;
             cout<<"Please enter the name of the city you looking for:"<<endl;
             string city_name;
-            cin >> city_name;
+            cin.ignore();
+            getline(cin, city_name);
             vector<Node> result = map.InOrder(0, city_name, minbeds);
             if(result.size() == 0) {
                 cout << "No matching houses found" << endl;
             } else {
-            cout << "Houses with at least " << minbeds << " beds:" << endl;
-            cout << setw(6) << "Rooms" << setw(10) << "Price" << setw(20) << "City" << setw(10) << "Area" << endl;
-            for(unsigned int i = 0; i < result.size(); i++) {
-                cout << "  " << result.at(i).Room << "   $" << setw(9) << result.at(i).Prices << setw(20) << result.at(i).City << setw(10) << result.at(i).SqFeet << endl;
-            }
-            // in this case you can add an if statement that compares the input number of beds you are looking for. if it appears.
-            // it will return every aparment in that city from the map
-            // if not it just return a message of not found
+                cout << "Houses with at least " << minbeds << " beds:" << endl;
+                cout << setw(6) << "Beds" << setw(10) << "Price" << setw(20) << "City" << setw(10) << "Area" << endl;
+                for(unsigned int i = 0; i < result.size(); i++) {
+                string price = "$" + to_string(result.at(i).Prices);
+                cout << setw(6) << result.at(i).Room << setw(10) << price << setw(20) << result.at(i).City << setw(10) << result.at(i).SqFeet << endl;
+                }
+                // in this case you can add an if statement that compares the input number of beds you are looking for. if it appears.
+                // it will return every aparment in that city from the map
+                // if not it just return a message of not found
             }
         }
         else if(selection_op == 2)
         {
-           vector<RecordsOfHomes> insertheap = insert_on_heap(info);
-           // vector<int> insertheap = insert_on_heap(info);
-           // printVec(insertheap);
+            cout<<"please select the minimum number of beds to search for:"<<endl;
+            double numBeds;
+            cin>>numBeds;
+            
+            cout<<"please enter the name of the city you looking for:"<<endl;
+            string city_name;
+            cin.ignore();
+            getline(cin, city_name);
 
-            // in this case you can add an if statement that compares the input with the number of beds you are looking for. if it appears.
-            // it will return every aparment in that city from the maxheap.
-            // if not it just return a message of not found.
-
-
-            cout<<"Please select the minimum number of beds to search for:"<<endl;
-
+            vector<RecordsOfHomes> bedHeap = search_cities_rooms(insertheap, city_name, numBeds);
+            if(bedHeap.size() == 0)
+            {
+                cout << "No homes were found with that number of rooms" << endl;
+                continue;
+            }
+            cout << "Houses with at least " << numBeds << " beds:" << endl;
+            cout << setw(6) << "Beds" << setw(10) << "Price" << setw(20) << "City" << endl;
+            for(int i = 0; i < bedHeap.size(); i++)
+            {
+                string price = "$" + to_string(bedHeap[i].Prices);
+                cout << setw(6) << bedHeap[i].Room << setw(10) << price << setw(20) << bedHeap[i].City << endl;
+                if(i >= 10)
+                    break;
+            }
         }
-        
     }
     //for searching by  area.
     else if(selectOption == 2)
     {
         int selection_op;
         cout<<"1. Use maps"<<endl;
-        cout<<"2. Use minheap"<<endl;
+        cout<<"2. Use maxheap"<<endl;
         cin>>selection_op;
 
         if(selection_op == 1)
         {
             cout<<"Please enter the name of the city you looking for:"<<endl;
             string city_name;
-            cin >> city_name;
-            vector<Node> result = map.InOrder(1, city_name, 0);
+            cin.ignore();
+            getline(cin, city_name);
+            vector<Node> result = map.InOrder(0, city_name, 0);
             if(result.size() == 0) {
                 cout << "Not found" << endl;
             } else {
             cout << "Houses in " << city_name << " by area: " << endl;
-            cout << setw(6) << "Rooms" << setw(10) << "Price" << setw(20) << "City" << setw(10) << "Area" << endl;
+            cout << setw(6) << "Beds" << setw(10) << "Price" << setw(20) << "City" << setw(10) << "Area" << endl;
             for(unsigned int i = 0; i < result.size(); i++) {
-                cout << "  " << result.at(i).Room << "   $" << setw(9) << result.at(i).Prices << setw(20) << result.at(i).City << setw(10) << result.at(i).SqFeet << endl;
+                string price = "$" + to_string(result.at(i).Prices);
+                cout << setw(6) << result.at(i).Room << setw(10) << price << setw(20) << result.at(i).City << setw(10) << result.at(i).SqFeet << endl;
             }
             // in this case you can add an if statement that compares the input with the name of the city. if it appears.
             // it will return every aparment in that city from the map
@@ -278,11 +313,33 @@ int main()
             // in this case you can add an if statement that compares the input with the name of the city. if it appears.
             // it will return every aparment in that city from the heap.
             // if not it just return a message of not found.
-            cout<<"Please enter the name of the city you looking for:"<<endl;
-             string city_name;
-             cin >> city_name;
+            cout<<"please enter the name of the city you looking for:"<<endl;
+            string city_name;
+            cin.ignore();
+            getline(cin, city_name);
+
+            vector<RecordsOfHomes> cityHeap = search_cities_rooms(insertheap, city_name, 0);
+
+            if(cityHeap.size() == 0)
+            {
+                cout <<  "No homes were found in that city" << endl;
+                continue;
+            }
+            cout << "Houses in " << city_name << " by area: " << endl;
+            cout << setw(6) << "Beds" << setw(10) << "Price" << setw(20) << "City" << endl;
+
+            for(int i = 0; i < cityHeap.size(); i++)
+            {
+                string price = "$" + to_string(cityHeap[i].Prices);
+                cout << setw(6) << cityHeap[i].Room << setw(10) << price << setw(20) << cityHeap[i].City << endl;
+                if(i >= 10)
+                    break;
+            }
+
         }
+        }
+        else
+            cvar = false;
     }
-    
     return 0;
 }

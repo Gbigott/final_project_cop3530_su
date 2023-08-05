@@ -26,7 +26,4 @@ private:
 public:
     void AddHead(double ids, int rooms_beds, int prices, string city, int sqfeet);
     vector<Node> InOrder(bool isArea, string sortCity, int minBeds);
-    
-    
-    
 };
