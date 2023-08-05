@@ -220,7 +220,7 @@ int main()
                 cout << setw(6) << "Beds" << setw(10) << "Price" << setw(20) << "City" << setw(10) << "Area" << endl;
                 for(unsigned int i = 0; i < result.size(); i++) {
                 string price = "$" + to_string(result.at(i).Prices);
-                cout << "     " << result.at(i).Room << setw(10) << price << setw(20) << result.at(i).City << setw(10) << result.at(i).SqFeet << endl;
+                cout << setw(6) << result.at(i).Room << setw(10) << price << setw(20) << result.at(i).City << setw(10) << result.at(i).SqFeet << endl;
                 }
                 // in this case you can add an if statement that compares the input number of beds you are looking for. if it appears.
                 // it will return every aparment in that city from the map
@@ -249,7 +249,7 @@ int main()
             for(int i = 0; i < bedHeap.size(); i++)
             {
                 string price = "$" + to_string(bedHeap[i].Prices);
-                cout << "     " << bedHeap[i].Room << setw(10) << price << setw(20) << bedHeap[i].City << endl;
+                cout << setw(6) << bedHeap[i].Room << setw(10) << price << setw(20) << bedHeap[i].City << endl;
                 if(i >= 10)
                     break;
             }
@@ -277,7 +277,7 @@ int main()
             cout << setw(6) << "Beds" << setw(10) << "Price" << setw(20) << "City" << setw(10) << "Area" << endl;
             for(unsigned int i = 0; i < result.size(); i++) {
                 string price = "$" + to_string(result.at(i).Prices);
-                cout << "     " << result.at(i).Room << setw(10) << price << setw(20) << result.at(i).City << setw(10) << result.at(i).SqFeet << endl;
+                cout << setw(6) << result.at(i).Room << setw(10) << price << setw(20) << result.at(i).City << setw(10) << result.at(i).SqFeet << endl;
             }
             // in this case you can add an if statement that compares the input with the name of the city. if it appears.
             // it will return every aparment in that city from the map
@@ -307,7 +307,7 @@ int main()
             for(int i = 0; i < cityHeap.size(); i++)
             {
                 string price = "$" + to_string(cityHeap[i].Prices);
-                cout << "     " << cityHeap[i].Room << setw(10) << price << setw(20) << cityHeap[i].City << endl;
+                cout << setw(6) << cityHeap[i].Room << setw(10) << price << setw(20) << cityHeap[i].City << endl;
                 if(i >= 10)
                     break;
             }
@@ -319,4 +319,3 @@ int main()
     }
     return 0;
 }
-
