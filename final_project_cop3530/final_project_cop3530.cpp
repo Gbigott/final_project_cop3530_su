@@ -1,17 +1,19 @@
-#include<iostream>
-#include<string>
-#include<fstream>
-#include<vector>
-#include<sstream>
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <vector>
+#include <sstream>
 #include <algorithm>  
-#include<map>
+#include <map>
+#include "ordered_map.h"
+#include <iomanip>
 
 using namespace std;
 
 // structure that contains all the information that we filter from the csv file
 struct RecordsOfHomes
 {
-    RecordsOfHomes ( double ids,int rooms_beds,int prices,string city)
+    RecordsOfHomes (double ids,int rooms_beds,int prices,string city)
     {
         IDS = ids;
         Room = rooms_beds;
@@ -50,7 +52,7 @@ void printVec(vector<RecordsOfHomes> row) {
 //     }
 // }
 
-vector<RecordsOfHomes> Read_file(string in_file)
+vector<RecordsOfHomes> Read_file(string in_file, OrderedMap &map)
 {
     ifstream infile;
     vector<RecordsOfHomes> saved_info;
@@ -58,13 +60,13 @@ vector<RecordsOfHomes> Read_file(string in_file)
     
     if(!(infile.is_open()))
     {
-        cout << "not file detected" << endl;
+        cout << "Warning: no file detected" << endl;
     }
     else
     {
         string s;
         
-        cout << " processing info..." << endl;
+        cout << "Processing info..." << endl;
         getline(infile, s);
 
         while(getline(infile,s)){
@@ -74,7 +76,8 @@ vector<RecordsOfHomes> Read_file(string in_file)
             string region_url;
             int price;
             string type;
-            string sq_feet;
+            string sq_feet_temp;
+            int sq_feet;
             int beds;
             string baths;
             string cats_allow;
@@ -102,7 +105,8 @@ vector<RecordsOfHomes> Read_file(string in_file)
             getline(inputString,temp,',');
             price = atoi(temp.c_str());
             getline(inputString,type,',');
-            getline(inputString,sq_feet,',');
+            getline(inputString,sq_feet_temp,',');
+            sq_feet = atoi(sq_feet_temp.c_str());
             getline(inputString,temp,',');
             beds = atoi(temp.c_str());
             getline(inputString,baths,',');
@@ -122,7 +126,7 @@ vector<RecordsOfHomes> Read_file(string in_file)
             RecordsOfHomes records(ids,beds, price, region);
 
             saved_info.push_back(records);
-
+            map.AddHead(ids, beds, price, region, sq_feet);
              
              
         }
@@ -172,7 +176,7 @@ vector<RecordsOfHomes> Read_file(string in_file)
 
     for(double i = starting_point ;i>=0; i--)
     {
-    heapify_down(temp,temp.size(),i);
+        heapify_down(temp,temp.size(),i);
     }
 
 
@@ -185,7 +189,8 @@ int main()
     
     vector<RecordsOfHomes> info;
     //string file = "housing.csv";
-    info = Read_file("housing.csv");
+    OrderedMap map;
+    info = Read_file("housing.csv", map);
     
     
     cout<<"Welcome to our housing search app! please choose your search method:"<<endl;
@@ -200,16 +205,30 @@ int main()
     {
         int selection_op;
         cout<<"1. Use maps"<<endl;
-        cout<<"2.Use maxheap"<<endl;
+        cout<<"2. Use maxheap"<<endl;
         cin>>selection_op;
 
         if(selection_op == 1)
         {
-            //insert your map function here.
-            cout<<"please select the minimum number of beds to search for:"<<endl;
+            cout<<"Please select the minimum number of beds to search for:"<<endl;
+            int minbeds;
+            cin >> minbeds;
+            cout<<"Please enter the name of the city you looking for:"<<endl;
+            string city_name;
+            cin >> city_name;
+            vector<Node> result = map.InOrder(0, city_name, minbeds);
+            if(result.size() == 0) {
+                cout << "No matching houses found" << endl;
+            } else {
+            cout << "Houses with at least " << minbeds << " beds:" << endl;
+            cout << setw(6) << "Rooms" << setw(10) << "Price" << setw(20) << "City" << setw(10) << "Area" << endl;
+            for(unsigned int i = 0; i < result.size(); i++) {
+                cout << "  " << result.at(i).Room << "   $" << setw(9) << result.at(i).Prices << setw(20) << result.at(i).City << setw(10) << result.at(i).SqFeet << endl;
+            }
             // in this case you can add an if statement that compares the input number of beds you are looking for. if it appears.
             // it will return every aparment in that city from the map
             // if not it just return a message of not found
+            }
         }
         else if(selection_op == 2)
         {
@@ -222,7 +241,7 @@ int main()
             // if not it just return a message of not found.
 
 
-            cout<<"please select the minimum number of beds to search for:"<<endl;
+            cout<<"Please select the minimum number of beds to search for:"<<endl;
 
         }
         
@@ -232,32 +251,38 @@ int main()
     {
         int selection_op;
         cout<<"1. Use maps"<<endl;
-        cout<<"2.Use minheap"<<endl;
+        cout<<"2. Use minheap"<<endl;
         cin>>selection_op;
 
         if(selection_op == 1)
         {
-            //insert your map function here.
-            cout<<"please enter the name of the city you looking for:"<<endl;
+            cout<<"Please enter the name of the city you looking for:"<<endl;
             string city_name;
             cin >> city_name;
-
+            vector<Node> result = map.InOrder(1, city_name, 0);
+            if(result.size() == 0) {
+                cout << "Not found" << endl;
+            } else {
+            cout << "Houses in " << city_name << " by area: " << endl;
+            cout << setw(6) << "Rooms" << setw(10) << "Price" << setw(20) << "City" << setw(10) << "Area" << endl;
+            for(unsigned int i = 0; i < result.size(); i++) {
+                cout << "  " << result.at(i).Room << "   $" << setw(9) << result.at(i).Prices << setw(20) << result.at(i).City << setw(10) << result.at(i).SqFeet << endl;
+            }
             // in this case you can add an if statement that compares the input with the name of the city. if it appears.
             // it will return every aparment in that city from the map
             // if not it just return a message of not found
+            }
         }
         else if(selection_op == 2)
         {
             // in this case you can add an if statement that compares the input with the name of the city. if it appears.
             // it will return every aparment in that city from the heap.
             // if not it just return a message of not found.
-            cout<<"please enter the name of the city you looking for:"<<endl;
+            cout<<"Please enter the name of the city you looking for:"<<endl;
              string city_name;
              cin >> city_name;
         }
     }
-
-
-
+    
     return 0;
 }
