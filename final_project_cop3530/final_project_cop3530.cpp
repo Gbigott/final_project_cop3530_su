@@ -269,7 +269,7 @@ int main()
             string city_name;
             cin.ignore();
             getline(cin, city_name);
-            vector<Node> result = map.InOrder(1, city_name, 0);
+            vector<Node> result = map.InOrder(0, city_name, 0);
             if(result.size() == 0) {
                 cout << "Not found" << endl;
             } else {
