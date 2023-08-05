@@ -1,5 +1,4 @@
 #include "ordered_map.h"
-#include <iostream>
 using namespace std;
 
 void OrderedMap::AddHeadHelper(Node& target, Node* loc, bool isArea) {
@@ -58,29 +57,30 @@ void OrderedMap::AddHeadHelper(Node& target, Node* loc, bool isArea) {
 void OrderedMap::AddHead(double ids, int rooms_beds, int prices, string city, int sqfeet) {
     if(head1 == nullptr) {
         head1 = new Node(ids, rooms_beds, prices, city, sqfeet);
-        head2 = new Node(ids, rooms_beds, prices, city, sqfeet);
+        //head2 = new Node(ids, rooms_beds, prices, city, sqfeet);
         return;
     }
     Node target (ids, rooms_beds, prices, city, sqfeet);
-    //cout << rooms_beds << "  " << city << sqfeet << endl;
     AddHeadHelper(target, head1, 0);
-    AddHeadHelper(target, head2, 1);
+    //AddHeadHelper(target, head2, 1);
 }
 
 void OrderedMap::InOrderHelper(vector<Node>& target, Node* loc, string sortCity, int minBeds) {
     if(loc == nullptr)
         return;
+    // Left
     if(loc->Lptr != nullptr)
         InOrderHelper(target, loc->Lptr, sortCity, minBeds);
     if(target.size() >= 10)
         return;
     // Self
-    if(loc->City == sortCity and loc->Room >= minBeds){
+    if((loc->City == sortCity or sortCity == "") and loc->Room >= minBeds){
         Node tempNode = Node(loc->IDS, loc->Room, loc->Prices, loc->City, loc->SqFeet);
         target.push_back(tempNode);
     }
     if(target.size() >= 10)
         return;
+    // Right
     if(loc->Rptr != nullptr)
         InOrderHelper(target, loc->Rptr, sortCity, minBeds);
     
