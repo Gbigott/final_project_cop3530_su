@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -9,6 +10,7 @@
 #include "ordered_map.cpp"
 #include <iomanip>
 using namespace std;
+using namespace std::chrono;
 
 
 //helper function for printing the heapmin vector.
@@ -137,16 +139,15 @@ vector<RecordsOfHomes> Read_file(string in_file, OrderedMap &map)
 }
 
 // Helper function that searches for properties with the specified cityName with at least numRooms
-vector<RecordsOfHomes> search_cities_rooms(vector<RecordsOfHomes> info, string cityName, double numRooms)
+vector<RecordsOfHomes> search_cities_rooms(vector<RecordsOfHomes> info, string cityName, int numRooms)
 {  
     vector<RecordsOfHomes> resultingHeap;
     int n = info.size()-1;
-    for(int i = 0; i < n; i++)
+    for(int i = 0; i < info.size(); i++)
     {
-        // Heapify Up
+        // Heapify Down
         RecordsOfHomes temp = info[0];
         info[0] = info[n];
-        bool cl = true;
         int smallest = 0;
         int z = 0;
         while(z < n-1) {
@@ -184,8 +185,14 @@ int main()
     vector<RecordsOfHomes> info;
     //string file = "housing.csv";
     OrderedMap map;
+    auto start = high_resolution_clock::now();
     info = Read_file("housing.csv", map);
-    
+    auto stop = high_resolution_clock::now();
+    cout << "Map time taken: " << duration_cast<microseconds>(stop - start).count() << endl;
+    start = high_resolution_clock::now();
+    vector<RecordsOfHomes> insertheap = insert_on_heap(info);
+    stop = high_resolution_clock::now();
+    cout << "Heapify time taken: " << duration_cast<microseconds>(stop - start).count() << endl;
     bool cvar = true;
     cout<<"Welcome to our housing search app!" << endl;
     while(cvar) {
@@ -193,9 +200,6 @@ int main()
         cout<<"1. Search by room count"<<endl;
         cout<<"2. Search by area"<<endl;
         cout<<"3. Quit"<<endl;
-    
-
-        vector<RecordsOfHomes> insertheap = insert_on_heap(info);
 
         int selectOption;
         cin>>selectOption;
@@ -219,18 +223,22 @@ int main()
             cin.ignore();
             getline(cin, city_name);
             vector<RecordsOfHomes> result = map.InOrder(0, city_name, minbeds);
+            start = high_resolution_clock::now();
             if(result.size() == 0) {
                 cout << "No matching houses found" << endl;
             } else {
+                
                 cout << "Houses with at least " << minbeds << " beds:" << endl;
                 cout << setw(6) << "Beds" << setw(10) << "Price" << setw(20) << "City" << setw(10) << "Area" << endl;
                 for(unsigned int i = 0; i < result.size(); i++) {
-                string price = "$" + to_string(result.at(i).Prices);
-                cout << setw(6) << result.at(i).Room << setw(10) << price << setw(20) << result.at(i).City << setw(10) << result.at(i).SqFeet << endl;
+                    string price = "$" + to_string(result.at(i).Prices);
+                    cout << setw(6) << result.at(i).Room << setw(10) << price << setw(20) << result.at(i).City << setw(10) << result.at(i).SqFeet << endl;
                 }
                 // in this case you can add an if statement that compares the input number of beds you are looking for. if it appears.
                 // it will return every aparment in that city from the map
                 // if not it just return a message of not found
+                stop = high_resolution_clock::now();
+                cout << "Time taken: " << duration_cast<microseconds>(stop - start).count() << endl;
             }
         }
         else if(selection_op == 2)
@@ -243,7 +251,7 @@ int main()
             string city_name;
             cin.ignore();
             getline(cin, city_name);
-
+            start = high_resolution_clock::now();
             vector<RecordsOfHomes> bedHeap = search_cities_rooms(insertheap, city_name, numBeds);
             if(bedHeap.size() == 0)
             {
@@ -259,6 +267,8 @@ int main()
                 if(i >= 10)
                     break;
             }
+            stop = high_resolution_clock::now();
+            cout << "Time taken: " << duration_cast<microseconds>(stop - start).count() << endl;
         }
     }
     //for searching by  area.
@@ -268,13 +278,14 @@ int main()
         cout<<"1. Use maps"<<endl;
         cout<<"2. Use minheap"<<endl;
         cin>>selection_op;
-
+        
         if(selection_op == 1)
         {
             cout<<"Please enter the name of the city you looking for:"<<endl;
             string city_name;
             cin.ignore();
             getline(cin, city_name);
+            start = high_resolution_clock::now();
             vector<RecordsOfHomes> result = map.InOrder(0, city_name, 0);
             if(result.size() == 0) {
                 cout << "Not found" << endl;
@@ -289,6 +300,8 @@ int main()
             // it will return every aparment in that city from the map
             // if not it just return a message of not found
             }
+            stop = high_resolution_clock::now();
+            cout << "Time taken: " << duration_cast<microseconds>(stop - start).count() << endl;
         }
         else if(selection_op == 2)
         {
@@ -299,7 +312,7 @@ int main()
             string city_name;
             cin.ignore();
             getline(cin, city_name);
-
+            start = high_resolution_clock::now();
             vector<RecordsOfHomes> cityHeap = search_cities_rooms(insertheap, city_name, 0);
 
             if(cityHeap.size() == 0)
@@ -317,6 +330,8 @@ int main()
                 if(i >= 10)
                     break;
             }
+            stop = high_resolution_clock::now();
+            cout << "Time taken: " << duration_cast<microseconds>(stop - start).count() << endl;
 
         }
         }
